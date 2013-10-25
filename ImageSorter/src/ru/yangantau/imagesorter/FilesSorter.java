@@ -31,9 +31,9 @@ class DirectoryIterator {
 		// File parent = currentPath.getParentFile();
 		File parent = currentPath;
 
-		System.out.println("parent.getAbsolutePath() is:"
-				+ parent.getAbsolutePath());
-		System.out.println();
+		//System.out.println("parent.getAbsolutePath() is:"
+		//		+ parent.getAbsolutePath());
+		//System.out.println();
 
 		File[] files = parent.listFiles();
 		for (File theFile : files) {
