@@ -10,20 +10,22 @@ import com.drew.metadata.Directory;
 // take Only static int fields
 
 public class GetConstReflection {
-	ArrayList<String> tags = new ArrayList<String>();
-
-	GetConstReflection(Class<?> cl) {
+	
+	
+	static ArrayList<String> CalculateTags(Class<?> cl) {
+		ArrayList<String> tags = new ArrayList<String>();
 		Field[] fields = cl.getDeclaredFields();
 		for (Field f : fields) {
-			if (f.getType().getName() == "int")
-				if (Modifier.isStatic(f.getModifiers())) {
-					tags.add(f.getName());
-				}
+			if ((f.getType().getName() == "int")
+					|| (Modifier.isStatic(f.getModifiers()))) {
+				tags.add(f.getName());
+			}
 		}
-
-	}
-
-	ArrayList<String> getConst() {
 		return tags;
 	}
+	
+	static ArrayList<String> CalculateTags(String className) throws ClassNotFoundException {
+		return CalculateTags(Class.forName(className));
+	}
+
 }

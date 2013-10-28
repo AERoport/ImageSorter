@@ -26,13 +26,20 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import com.drew.metadata.exif.ExifSubIFDDirectory;
+
 import javax.swing.ListSelectionModel;
+
 import java.awt.FlowLayout;
+
 import javax.swing.BoxLayout;
+
 import java.awt.Component;
 import java.awt.Rectangle;
+
 import javax.swing.border.LineBorder;
+
 import java.awt.Color;
+
 import javax.swing.JCheckBox;
 
 public class SwingTest {
@@ -68,7 +75,7 @@ public class SwingTest {
 	}
 
 	// /
-	static final String[] TAG_TYPES_SERIES = { "ExifSubIFDDirectory",
+	private static final String[] TAG_TYPES_SERIES = { "ExifSubIFDDirectory",
 			"ExifIFD0Directory", "ExifInteropDirectory",
 			"ExifThumbnailDirectory", "JpegDirectory", "JpegCommentDirectory",
 			"JfifDirectory", "BmpHeaderDirectory", "GifHeaderDirectory",
@@ -85,15 +92,30 @@ public class SwingTest {
 			"SonyType1MakernoteDirectory", "SonyType6MakernoteDirectory",
 			"XmpDirectory" };
 
-	/*
-	 * ListModel<String> lm = new AbstractListModel<String>() {
-	 * GetConstReflection gcr = new GetConstReflection(
-	 * ExifSubIFDDirectory.class); ArrayList<String> al = gcr.getConst();
-	 * 
-	 * public int getSize() { return al.size(); }
-	 * 
-	 * public String getElementAt(int index) { return al.get(index); } };
-	 */
+	ListModel<String> getTags(final String className) {
+		ListModel<String> lm;
+		try {
+			lm = new AbstractListModel<String>() {
+
+				ArrayList<String> al = GetConstReflection
+						.CalculateTags(className);
+
+				public int getSize() {
+					return al.size();
+				}
+
+				public String getElementAt(int index) {
+					return al.get(index);
+				}
+			};
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+		;
+
+		return lm;
+	};
+
 	/**
 	 * Initialize the contents of the frame.
 	 * 
@@ -108,9 +130,18 @@ public class SwingTest {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 100, 100, 10, 100, 20, 30, 30 };
 		gridBagLayout.rowHeights = new int[] { 10, 10, 10, 10, 200 };
-		gridBagLayout.columnWeights = new double[] { 10, 10, 0, 1, 1, 1, 1.0 };
-		gridBagLayout.rowWeights = new double[] { 0, 0, 0, 0, 20 };
+		gridBagLayout.columnWeights = new double[] { 10, 10, 0, 1.0, 1, 1, 1.0 };
+		gridBagLayout.rowWeights = new double[] { 0, 0, 0, 0, 1.0 };
 		frmAeroportImagesorter.getContentPane().setLayout(gridBagLayout);
+
+		JTextArea textArea = new JTextArea();
+		GridBagConstraints gbc_textArea = new GridBagConstraints();
+		gbc_textArea.gridwidth = 4;
+		gbc_textArea.insets = new Insets(0, 0, 0, 5);
+		gbc_textArea.fill = GridBagConstraints.BOTH;
+		gbc_textArea.gridx = 3;
+		gbc_textArea.gridy = 4;
+		frmAeroportImagesorter.getContentPane().add(textArea, gbc_textArea);
 
 		JComboBox comboBoxEXIFTagType = new JComboBox(TAG_TYPES_SERIES);// Fill
 		// TagTypesSeries
@@ -160,14 +191,14 @@ public class SwingTest {
 
 		JTree tree = new JTree();
 		GridBagConstraints gbc_tree = new GridBagConstraints();
+		gbc_tree.insets = new Insets(0, 0, 5, 0);
 		gbc_tree.gridwidth = 4;
-		gbc_tree.gridheight = 2;
 		gbc_tree.fill = GridBagConstraints.BOTH;
 		gbc_tree.gridx = 3;
 		gbc_tree.gridy = 3;
 		frmAeroportImagesorter.getContentPane().add(tree, gbc_tree);
 
-		JList listParam = new JList();
+		JList<String> listParam = new JList<String>();
 		GridBagConstraints gbc_listParam = new GridBagConstraints();
 		gbc_listParam.gridwidth = 2;
 		gbc_listParam.gridheight = 4;
@@ -196,7 +227,15 @@ public class SwingTest {
 		frmAeroportImagesorter.getContentPane().add(comboBoxDataLength,
 				gbc_comboBoxDataLength);
 
-		JList list_EXIF = new JList();
+		JList<String> list_EXIF = new JList<String>();
+		String selItem = "com.drew.metadata.exif."
+				+ (String) comboBoxEXIFTagType.getModel().getSelectedItem();
+		textArea.append(selItem);
+		ListModel<String> lm = getTags(selItem);
+		if (lm != null) {
+			list_EXIF.setModel(getTags(selItem));
+		}
+
 		GridBagConstraints gbc_list_EXIF = new GridBagConstraints();
 		gbc_list_EXIF.insets = new Insets(0, 0, 0, 5);
 		gbc_list_EXIF.gridheight = 7;
