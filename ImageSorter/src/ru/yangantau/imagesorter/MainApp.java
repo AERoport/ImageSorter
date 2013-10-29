@@ -8,6 +8,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -87,6 +88,10 @@ public class MainApp {
 		try {
 			lm = new AbstractListModel<String>() {
 
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
 				ArrayList<String> al = GetConstReflection
 						.CalculateTags(className);
 
@@ -168,7 +173,7 @@ public class MainApp {
 		frmAeroportImagesorter.getContentPane().add(comboBoxDataType,
 				gbc_comboBoxDataType);
 
-		comboBoxProfile = new JComboBox();
+		comboBoxProfile = new JComboBox<String>();
 		GridBagConstraints gbc_comboBoxProfile = new GridBagConstraints();
 		gbc_comboBoxProfile.insets = new Insets(0, 0, 5, 5);
 		gbc_comboBoxProfile.fill = GridBagConstraints.HORIZONTAL;
@@ -226,7 +231,7 @@ public class MainApp {
 				gbc_textFieldData);
 		textFieldData.setColumns(10);
 
-		JComboBox comboBoxDataLength = new JComboBox();
+		JComboBox<Integer> comboBoxDataLength = new JComboBox<Integer>();
 		GridBagConstraints gbc_comboBoxDataLength = new GridBagConstraints();
 		gbc_comboBoxDataLength.insets = new Insets(0, 0, 5, 5);
 		gbc_comboBoxDataLength.fill = GridBagConstraints.HORIZONTAL;
