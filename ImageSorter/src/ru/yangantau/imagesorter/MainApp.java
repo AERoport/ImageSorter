@@ -1,53 +1,42 @@
 package ru.yangantau.imagesorter;
 
-import java.awt.BorderLayout;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.AbstractListModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 
-import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Tag;
 
-import javax.swing.ListSelectionModel;
-
-import java.awt.FlowLayout;
-
-import javax.swing.BoxLayout;
-
-import java.awt.Component;
-import java.awt.Rectangle;
-
-import javax.swing.border.LineBorder;
-
-import java.awt.Color;
-
-import javax.swing.JCheckBox;
-
-public class SwingTest {
+public class MainApp {
 
 	private JFrame frmAeroportImagesorter;
 	private JTextField textFieldData;
 	private JTextField textFieldSource;
 	private JTextField textFieldDest;
+	private JComboBox<String> comboBoxEXIFTagType;
+	private JTextArea textArea;
+	private JList<String> list_EXIF;
+	private JComboBox<String> comboBoxDataType;
+	private JComboBox<String> comboBoxProfile;
 
 	/**
 	 * Launch the application.
@@ -56,7 +45,7 @@ public class SwingTest {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					SwingTest window = new SwingTest();
+					MainApp window = new MainApp();
 					window.frmAeroportImagesorter.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -68,9 +57,12 @@ public class SwingTest {
 	/**
 	 * Create the application.
 	 * 
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 * 
 	 * @throws ClassNotFoundException
 	 */
-	public SwingTest() {
+	public MainApp() throws InstantiationException, IllegalAccessException {
 		initialize();
 	}
 
@@ -120,8 +112,11 @@ public class SwingTest {
 	 * Initialize the contents of the frame.
 	 * 
 	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
-	private void initialize() {
+	private void initialize() throws InstantiationException,
+			IllegalAccessException {
 		frmAeroportImagesorter = new JFrame();
 		frmAeroportImagesorter.setSize(new Dimension(537, 417));
 		frmAeroportImagesorter.setMinimumSize(new Dimension(300, 300));
@@ -134,7 +129,7 @@ public class SwingTest {
 		gridBagLayout.rowWeights = new double[] { 0, 0, 0, 0, 1.0 };
 		frmAeroportImagesorter.getContentPane().setLayout(gridBagLayout);
 
-		JTextArea textArea = new JTextArea();
+		textArea = new JTextArea();
 		GridBagConstraints gbc_textArea = new GridBagConstraints();
 		gbc_textArea.gridwidth = 4;
 		gbc_textArea.insets = new Insets(0, 0, 0, 5);
@@ -143,8 +138,21 @@ public class SwingTest {
 		gbc_textArea.gridy = 4;
 		frmAeroportImagesorter.getContentPane().add(textArea, gbc_textArea);
 
-		JComboBox comboBoxEXIFTagType = new JComboBox(TAG_TYPES_SERIES);// Fill
-		// TagTypesSeries
+		comboBoxEXIFTagType = new JComboBox<String>(TAG_TYPES_SERIES);// Fill
+		comboBoxEXIFTagType.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				textArea.append("actionPerformed\n");
+				String selItem = "com.drew.metadata.exif."
+						+ (String) comboBoxEXIFTagType.getModel()
+								.getSelectedItem();
+				ListModel<String> lm = getTags(selItem);
+				if (lm != null) {
+					list_EXIF.setModel(lm);
+				}
+
+			}
+		});
+
 		GridBagConstraints gbc_comboBoxEXIFTagType = new GridBagConstraints();
 		gbc_comboBoxEXIFTagType.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBoxEXIFTagType.insets = new Insets(0, 0, 5, 5);
@@ -153,7 +161,7 @@ public class SwingTest {
 		frmAeroportImagesorter.getContentPane().add(comboBoxEXIFTagType,
 				gbc_comboBoxEXIFTagType);
 
-		JComboBox comboBoxDataType = new JComboBox();
+		comboBoxDataType = new JComboBox<String>();
 		GridBagConstraints gbc_comboBoxDataType = new GridBagConstraints();
 		gbc_comboBoxDataType.insets = new Insets(0, 0, 5, 5);
 		gbc_comboBoxDataType.fill = GridBagConstraints.HORIZONTAL;
@@ -162,7 +170,7 @@ public class SwingTest {
 		frmAeroportImagesorter.getContentPane().add(comboBoxDataType,
 				gbc_comboBoxDataType);
 
-		JComboBox comboBoxProfile = new JComboBox();
+		comboBoxProfile = new JComboBox();
 		GridBagConstraints gbc_comboBoxProfile = new GridBagConstraints();
 		gbc_comboBoxProfile.insets = new Insets(0, 0, 5, 5);
 		gbc_comboBoxProfile.fill = GridBagConstraints.HORIZONTAL;
@@ -198,15 +206,17 @@ public class SwingTest {
 		gbc_tree.gridy = 3;
 		frmAeroportImagesorter.getContentPane().add(tree, gbc_tree);
 
+		// ************** List of param
 		JList<String> listParam = new JList<String>();
-		GridBagConstraints gbc_listParam = new GridBagConstraints();
-		gbc_listParam.gridwidth = 2;
-		gbc_listParam.gridheight = 4;
-		gbc_listParam.insets = new Insets(0, 0, 5, 5);
-		gbc_listParam.fill = GridBagConstraints.BOTH;
-		gbc_listParam.gridx = 1;
-		gbc_listParam.gridy = 4;
-		frmAeroportImagesorter.getContentPane().add(listParam, gbc_listParam);
+		JScrollPane scrollPaneListParam = new JScrollPane(listParam);
+		GridBagConstraints gbc_scrollPaneListParam = new GridBagConstraints();
+		gbc_scrollPaneListParam.gridwidth = 2;
+		gbc_scrollPaneListParam.insets = new Insets(0, 0, 0, 5);
+		gbc_scrollPaneListParam.fill = GridBagConstraints.BOTH;
+		gbc_scrollPaneListParam.gridx = 1;
+		gbc_scrollPaneListParam.gridy = 4;
+		frmAeroportImagesorter.getContentPane().add(scrollPaneListParam,
+				gbc_scrollPaneListParam);
 
 		textFieldData = new JTextField();
 		GridBagConstraints gbc_textFieldData = new GridBagConstraints();
@@ -227,22 +237,34 @@ public class SwingTest {
 		frmAeroportImagesorter.getContentPane().add(comboBoxDataLength,
 				gbc_comboBoxDataLength);
 
-		JList<String> list_EXIF = new JList<String>();
+		// ********************** list EXIF Tags
+
+		list_EXIF = new JList<String>();
 		String selItem = "com.drew.metadata.exif."
 				+ (String) comboBoxEXIFTagType.getModel().getSelectedItem();
-		textArea.append(selItem);
+		// **************
+		textArea.append("selItem="+selItem + "\n");
+
+		// **************************************
+		// ************* TEST!!!!! *************
+		try {
+			Directory d = (Directory) Class.forName(selItem).newInstance();
+			textArea.append("d.getName()="+d.getName() + "\n");
+			textArea.append("d.getTagCount()="+d.getTagCount());
+			for (Tag t:d.getTags()) {
+				textArea.append(t.toString()+"\n");
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			textArea.append("ERROR\n");
+		}
+		// ************* TEST END *************
+		// **************************************
+
 		ListModel<String> lm = getTags(selItem);
 		if (lm != null) {
-			list_EXIF.setModel(getTags(selItem));
+			list_EXIF.setModel(lm);
 		}
-
-		GridBagConstraints gbc_list_EXIF = new GridBagConstraints();
-		gbc_list_EXIF.insets = new Insets(0, 0, 0, 5);
-		gbc_list_EXIF.gridheight = 7;
-		gbc_list_EXIF.fill = GridBagConstraints.BOTH;
-		gbc_list_EXIF.gridx = 0;
-		gbc_list_EXIF.gridy = 1;
-		frmAeroportImagesorter.getContentPane().add(list_EXIF, gbc_list_EXIF);
 
 		JScrollPane scrollPanelistEXIF = new JScrollPane(list_EXIF);
 		GridBagConstraints gbc_scrollPanelistEXIF = new GridBagConstraints();
@@ -254,6 +276,7 @@ public class SwingTest {
 		frmAeroportImagesorter.getContentPane().add(scrollPanelistEXIF,
 				gbc_scrollPanelistEXIF);
 
+		// ************ BUTTON ADD
 		JButton btnToParamList = new JButton("Add");
 		GridBagConstraints gbc_btnToParamList = new GridBagConstraints();
 		gbc_btnToParamList.insets = new Insets(0, 0, 5, 5);
@@ -319,16 +342,6 @@ public class SwingTest {
 		gbc_chckbxDefault.gridy = 2;
 		frmAeroportImagesorter.getContentPane().add(chckbxDefault,
 				gbc_chckbxDefault);
-
-		JScrollPane scrollPaneListParam = new JScrollPane(listParam);
-		GridBagConstraints gbc_scrollPaneListParam = new GridBagConstraints();
-		gbc_scrollPaneListParam.gridwidth = 2;
-		gbc_scrollPaneListParam.insets = new Insets(0, 0, 0, 5);
-		gbc_scrollPaneListParam.fill = GridBagConstraints.BOTH;
-		gbc_scrollPaneListParam.gridx = 1;
-		gbc_scrollPaneListParam.gridy = 4;
-		frmAeroportImagesorter.getContentPane().add(scrollPaneListParam,
-				gbc_scrollPaneListParam);
 
 	}
 }
