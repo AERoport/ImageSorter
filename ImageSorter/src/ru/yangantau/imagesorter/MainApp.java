@@ -7,12 +7,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -121,7 +123,7 @@ public class MainApp {
 	private void initialize() throws InstantiationException,
 			IllegalAccessException {
 		frmAeroportImagesorter = new JFrame();
-		frmAeroportImagesorter.setSize(new Dimension(537, 417));
+		frmAeroportImagesorter.setSize(new Dimension(658, 489));
 		frmAeroportImagesorter.setMinimumSize(new Dimension(300, 300));
 		frmAeroportImagesorter.setTitle("AERoport ImageSorter");
 		frmAeroportImagesorter.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -131,17 +133,39 @@ public class MainApp {
 		gridBagLayout.columnWeights = new double[] { 10, 10, 0, 1.0, 1, 1, 1.0 };
 		gridBagLayout.rowWeights = new double[] { 0, 0, 0, 0, 1.0 };
 		frmAeroportImagesorter.getContentPane().setLayout(gridBagLayout);
-
+		//   Logger Area
 		textArea = new JTextArea();
 		GridBagConstraints gbc_textArea = new GridBagConstraints();
 		gbc_textArea.gridwidth = 4;
-		gbc_textArea.insets = new Insets(0, 0, 0, 5);
 		gbc_textArea.fill = GridBagConstraints.BOTH;
 		gbc_textArea.gridx = 3;
 		gbc_textArea.gridy = 4;
 		frmAeroportImagesorter.getContentPane().add(textArea, gbc_textArea);
+		
+		final JFileChooser fc = new JFileChooser();
+		
+		JButton butFileDirSelect = new JButton("...");
+		butFileDirSelect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				textArea.append("file Open\n");
+		
+				int retVal =fc.showOpenDialog(frmAeroportImagesorter);
+				if (retVal==JFileChooser.APPROVE_OPTION)  {
+					File f= fc.getSelectedFile();
+							textArea.append(f.getName()+"\n");
+				}
+				
+				
+			}
+		});
+		GridBagConstraints gbc_butFileDirSelect = new GridBagConstraints();
+		gbc_butFileDirSelect.insets = new Insets(0, 0, 5, 0);
+		gbc_butFileDirSelect.gridx = 6;
+		gbc_butFileDirSelect.gridy = 0;
+		frmAeroportImagesorter.getContentPane().add(butFileDirSelect, gbc_butFileDirSelect);
 
-		comboBoxEXIFTagType = new JComboBox<String>(TAG_TYPES_SERIES);// Fill
+
+		comboBoxEXIFTagType = new JComboBox(TAG_TYPES_SERIES);// Fill
 		comboBoxEXIFTagType.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				textArea.append("actionPerformed\n");
@@ -253,7 +277,7 @@ public class MainApp {
 		try {
 			Directory d = (Directory) Class.forName(selItem).newInstance();
 			textArea.append("d.getName()="+d.getName() + "\n");
-			textArea.append("d.getTagCount()="+d.getTagCount());
+			textArea.append("d.getTagCount()="+d.getTagCount()+"\n");
 			for (Tag t:d.getTags()) {
 				textArea.append(t.toString()+"\n");
 			}
@@ -306,8 +330,8 @@ public class MainApp {
 
 		textFieldSource = new JTextField();
 		GridBagConstraints gbc_textFieldSource = new GridBagConstraints();
-		gbc_textFieldSource.gridwidth = 4;
-		gbc_textFieldSource.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldSource.gridwidth = 3;
+		gbc_textFieldSource.insets = new Insets(0, 0, 5, 5);
 		gbc_textFieldSource.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldSource.gridx = 3;
 		gbc_textFieldSource.gridy = 0;
